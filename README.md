@@ -4,6 +4,9 @@ A solver for puzzles involving permuting numbers and arithmetic operations to ex
 ## Problem Statement
 Given a multi-set of integers, X, and a set of operators (of any arity) F, find the set G(X,Y) containing every integer that can be expressed as an algebraic expression using every element of X once (per expression) and any of the operators of F as many times as needed.
 
+## Description
+The solution approach is to go through the list of digits given and construct all the possible expression trees for these digits and then evaluate the expression, recording all the of results.
+
 ## References
 ### Problem
 - https://en.wikipedia.org/wiki/Countdown_(game_show)#Numbers_round
