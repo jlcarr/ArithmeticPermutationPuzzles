@@ -94,7 +94,8 @@ class binop(node):
 		result = []
 		for right_size in range(1,len(self.nums)): 
 			for right_comb in itertools.combinations(self.nums, right_size):
-				left_comb = set(self.nums) - set(right_comb)
+				left_comb = [i for i in self.nums] 
+				[left_comb.remove(i) for i in right_comb if i in left_comb]
 				for op1 in self.subops:
 					op1_obj = op1(left_comb, parent=self)
 					if not op1_obj.is_valid():
@@ -115,11 +116,13 @@ class commutative(binop):
 		result = []
 		# fix to discard commutative isos
 		left_fix = next(iter(self.nums))
-		right_options = set(self.nums) - {left_fix}
+		right_options = [i for i in self.nums]
+		[right_options.remove(i) for i in [left_fix] if i in right_options]
 		# send to each side
 		for right_size in range(1,len(right_options)+1): 
 			for right_comb in itertools.combinations(right_options, right_size):
-				left_comb = set(self.nums) - set(right_comb)
+				left_comb = [i for i in self.nums]
+				[left_comb.remove(i) for i in right_comb if i in left_comb]
 				for op1 in self.subops:
 					op1_obj = op1(left_comb, parent=self)
 					if not op1_obj.is_valid():
@@ -168,7 +171,7 @@ class subtraction(binop):
 
 
 if __name__ == "__main__":
-	expr = node([4,4,4,4])
+	expr = node([1,2,3,4])
 	print(expr.print())
 	v = expr.value()
 	v = list(v)
