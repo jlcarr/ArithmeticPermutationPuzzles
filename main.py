@@ -36,6 +36,12 @@ class node:
 			result |= x.value()
 		return result
 
+	def value_expressions(self):
+		result = dict()
+		for x in self.children():
+			result.update(x.value_expressions())
+		return result
+
 
 class leaf(node):
 	def __init__(self, nums, parent=None):
@@ -60,6 +66,10 @@ class leaf(node):
 			result.add(val)
 		return result
 
+	def value_expressions(self):
+		result = {x:str(x) for x in self.value()}
+		return result
+
 	def symbol(self):
 		return "#"
 
@@ -78,6 +88,19 @@ class binop(node):
 				for op2 in op2_obj.value():
 					result.add(self.action(op1,op2))
 		return result
+
+	def value_expressions(self):
+		result = dict()
+		for op1_obj,op2_obj in self.children():
+			for val1,exp1 in op1_obj.value_expressions().items():
+				for val2,exp2 in op2_obj.value_expressions().items():
+					value = self.action(val1,val2)
+					expression = exp1+self.symbol()+exp2
+					if self.use_paren():
+						expression = '('+expression+')'
+					result[value] = expression
+		return result
+				
 
 	def print(self):
 		result = []
@@ -171,9 +194,14 @@ class subtraction(binop):
 
 
 if __name__ == "__main__":
-	expr = node([1,2,3,4])
-	print(expr.print())
-	v = expr.value()
-	v = list(v)
-	v.sort()
-	print(v)
+	expr = node([1,2,5,7])
+	value_expressions = expr.value_expressions()
+	values = list(value_expressions.keys())
+	values.sort()
+	#for value in values:
+	#	print(f"{value} = {value_expressions[value]}")
+	for i in range(101):
+		if i in value_expressions:
+			print(f"{i} = {value_expressions[i]}")
+		else:
+			print(f"{i} = NONE")
