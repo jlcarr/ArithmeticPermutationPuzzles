@@ -6,7 +6,7 @@ class node:
 		self.parent = parent
 		self.children_cache = None
 
-		self.subops = [leaf, addition, multiplication,subtraction]
+		self.subops = [leaf, addition, multiplication,subtraction, division]
 
 	def children(self):
 		if self.children_cache is None:
@@ -178,7 +178,7 @@ class multiplication(commutative):
 		return "*"	
 	def use_paren(self):
 		return type(self.parent) not in [addition, subtraction, multiplication, type(None)]
-	def action(self, l,r):
+	def action(self, l, r):
 		return l*r
 
 class subtraction(binop):
@@ -189,8 +189,43 @@ class subtraction(binop):
 		return "-"	
 	def use_paren(self):
 		return type(self.parent) not in [addition, type(None)]
-	def action(self, l,r):
+	def action(self, l, r):
 		return l-r
+
+class division(binop):
+	def __init__(self, nums, parent=None):
+		binop.__init__(self, nums, parent=parent)
+
+	def symbol(self):
+		return "/"	
+	def use_paren(self):
+		return type(self.parent) not in [addition, subtraction, multiplication, type(None)]
+	def action(self, l, r):
+		return l//r
+
+	def value_expressions(self):
+		result = dict()
+		for op1_obj,op2_obj in self.children():
+			for val1,exp1 in op1_obj.value_expressions().items():
+				for val2,exp2 in op2_obj.value_expressions().items():
+					if val2 == 0 or val1 % val2 != 0:
+						continue
+					value = self.action(val1,val2)
+					expression = exp1+self.symbol()+exp2
+					if self.use_paren():
+						expression = '('+expression+')'
+					result[value] = expression
+		return result
+
+	def value(self):
+		result = set()
+		for op1_obj,op2_obj in self.children():
+			for op1 in op1_obj.value():
+				for op2 in op2_obj.value():
+					if op2 ==0 or op1 % op2 != 0:
+						continue
+					result.add(self.action(op1,op2))
+		return result
 
 
 if __name__ == "__main__":
@@ -200,8 +235,11 @@ if __name__ == "__main__":
 	values.sort()
 	#for value in values:
 	#	print(f"{value} = {value_expressions[value]}")
+	count = 0
 	for i in range(101):
 		if i in value_expressions:
 			print(f"{i} = {value_expressions[i]}")
+			count += 1
 		else:
 			print(f"{i} = NONE")
+	print(f"{count}/101 expressed")
