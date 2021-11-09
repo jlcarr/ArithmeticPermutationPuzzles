@@ -11,6 +11,8 @@ The solution approach is to go through the list of digits given and construct al
 ### Problem
 - https://en.wikipedia.org/wiki/Countdown_(game_show)#Numbers_round
 - https://www.reddit.com/r/mildlyinteresting/comments/q66jb5/i_created_this_puzzle_where_using_only_4_digits/
+- https://www.youtube.com/watch?v=Noo4lN-vSvw
+- https://mrob.com/pub/ries/
 ### Expressions
 - https://en.wikipedia.org/wiki/Arity
 - https://en.wikipedia.org/wiki/Parse_tree
