@@ -7,7 +7,7 @@ class node:
 		self.parent = parent
 		self.children_cache = None
 
-		self.subops = [leaf, addition, multiplication, subtraction, division, exponentiation]
+		self.subops = [leaf, addition, multiplication, subtraction, division, exponentiation, factorial]
 
 	def children(self):
 		if self.children_cache is None:
@@ -73,6 +73,52 @@ class leaf(node):
 
 	def symbol(self):
 		return "#"
+
+
+class monoop(node):
+	def __init__(self, nums, parent=None):
+		node.__init__(self, nums, parent=parent)
+
+	def value(self):
+		result = set()
+		for op_obj in self.children():
+			for op in op_obj.value():
+				result.add(self.action(op))
+		return result
+
+	def value_expressions(self):
+		result = dict()
+		for op1_obj,op2_obj in self.children():
+			for val1,exp1 in op1_obj.value_expressions().items():
+				for val2,exp2 in op2_obj.value_expressions().items():
+					value = self.action(val1,val2)
+					expression = exp1+self.symbol()+exp2
+					if self.use_paren():
+						expression = '('+expression+')'
+					result[value] = expression
+		return result
+				
+
+	def print(self):
+		result = []
+		for op_obj in self.children():
+			for op in op_obj.print():
+				ex = op+self.symbol()
+				if self.use_paren():
+					ex = '('+ex+')'
+				result.append(ex)
+		return result
+
+	def compute_children(self):
+		result = []
+		for op in self.subops:
+			if op == factorial:
+				continue
+			op_obj = op(self.nums, parent=self)
+			if not op_obj.is_valid():
+				continue
+			result.append(op_obj)
+		return result
 
 
 class binop(node):
@@ -193,6 +239,7 @@ class subtraction(binop):
 	def action(self, l, r):
 		return l-r
 
+
 class division(binop):
 	def __init__(self, nums, parent=None):
 		binop.__init__(self, nums, parent=parent)
@@ -228,6 +275,7 @@ class division(binop):
 					result.add(self.action(op1,op2))
 		return result
 
+
 class exponentiation(binop):
 	def __init__(self, nums, parent=None):
 		binop.__init__(self, nums, parent=parent)
@@ -244,7 +292,7 @@ class exponentiation(binop):
 		for op1_obj,op2_obj in self.children():
 			for val1,exp1 in op1_obj.value_expressions().items():
 				for val2,exp2 in op2_obj.value_expressions().items():
-					if val2 <0 or val2*math.log(abs(val1)+1) > math.log(10000):
+					if val2 <0 or val2*math.log(abs(val1)+1) > math.log(1000):
 						continue
 					value = self.action(val1,val2)
 					expression = exp1+self.symbol()+exp2
@@ -264,6 +312,40 @@ class exponentiation(binop):
 		return result
 
 
+class factorial(monoop):
+	def __init__(self, nums, parent=None):
+		binop.__init__(self, nums, parent=parent)
+
+	def symbol(self):
+		return "!"
+	def use_paren(self):
+		return type(self.parent) not in [addition, subtraction, multiplication, type(None)]
+	def action(self, a):
+		return math.factorial(a)
+
+	def value_expressions(self):
+		result = dict()
+		for op_obj in self.children():
+			for val,exp in op_obj.value_expressions().items():
+				if val <0 or val > 5:
+					continue
+				value = self.action(val)
+				expression = exp+self.symbol()
+				if self.use_paren():
+					expression = '('+expression+')'
+				result[value] = expression
+		return result
+
+	def value(self):
+		result = set()
+		for op_obj in self.children():
+			for op in op_obj.value():
+				if val <0 or val > 5:
+					continue
+				result.add(self.action(op))
+		return result
+
+
 if __name__ == "__main__":
 	expr = node([1,2,5,7])
 	value_expressions = expr.value_expressions()
@@ -272,7 +354,7 @@ if __name__ == "__main__":
 	#for value in values:
 	#	print(f"{value} = {value_expressions[value]}")
 	count = 0
-	for i in range(201):
+	for i in range(101):
 		if i in value_expressions:
 			print(f"{i} = {value_expressions[i]}")
 			count += 1
